@@ -1,10 +1,9 @@
 #!/bin/bash
-# 1. Пытаемся скачать образ напрямую через зеркало huecker.io
-echo "Скачиваю образ через зеркало..."
-docker pull huecker.io/ipeit/moonlight-chrome-wasmv2:latest
+# Пробуем скачать официальный образ через работающее зеркало
+echo "Скачиваю официальный образ через зеркало..."
+docker pull huecker.io/moonlight-stream/moonlight-chrome-wasmv2:latest
 
-# 2. Создаем локальный тег, чтобы docker-compose узнал этот образ
-echo "Создаю локальный тег..."
-docker tag huecker.io/ipeit/moonlight-chrome-wasmv2:latest ipeit/moonlight-chrome-wasmv2:latest
+# Создаем тег, чтобы compose его подхватил
+docker tag huecker.io/moonlight-stream/moonlight-chrome-wasmv2:latest ghcr.io/moonlight-stream/moonlight-chrome-wasmv2:latest
 
-echo "Готово! Теперь можешь запускать docker compose up -d"
+echo "Готово! Запускай docker compose up -d"
