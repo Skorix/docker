@@ -1,7 +1,7 @@
 services:
+  # Игровой плеер в браузере
   moonlight-web:
-    # Используем этот проверенный образ:
-    image: moonlighstream/moonlight-chrome-wasmv2:latest
+    image: moonlightstream/moonlight-chrome-wasmv2:latest
     container_name: moonlight-web
     restart: always
     ports:
