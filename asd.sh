@@ -1,9 +1,10 @@
 #!/bin/bash
-echo "Скачиваю альтернативный образ..."
-docker pull huecker.io/giongto35/web-moonlight:latest
+echo "Очищаю старые ошибки..."
+docker compose down
+docker image prune -af
 
-echo "Создаю локальный тег..."
-docker tag huecker.io/giongto35/web-moonlight:latest giongto35/web-moonlight:latest
+echo "Скачиваю образ напрямую с Docker Hub..."
+docker pull moonlightstream/moonlight-chrome-wasmv2:latest
 
-echo "Готово! Запускай docker compose up -d"
-
+echo "Запускаю проект..."
+docker compose up -d
