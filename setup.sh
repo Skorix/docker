@@ -1,15 +1,10 @@
 #!/bin/bash
-# Настройка рабочих зеркал для Docker в РФ
-sudo mkdir -p /etc/docker
-echo '{
-  "registry-mirrors": [
-    "https://mirror.gcr.io",
-    "https://daocloud.io",
-    "https://huecker.io",
-    "https://dockerhub.timeweb.cloud"
-  ]
-}' | sudo tee /etc/docker/daemon.json
+# 1. Пытаемся скачать образ напрямую через зеркало huecker.io
+echo "Скачиваю образ через зеркало..."
+docker pull huecker.io/ipeit/moonlight-chrome-wasmv2:latest
 
-# Перезапуск сервиса
-sudo systemctl restart docker
-echo "Зеркала настроены, Docker перезапущен!"
+# 2. Создаем локальный тег, чтобы docker-compose узнал этот образ
+echo "Создаю локальный тег..."
+docker tag huecker.io/ipeit/moonlight-chrome-wasmv2:latest ipeit/moonlight-chrome-wasmv2:latest
+
+echo "Готово! Теперь можешь запускать docker compose up -d"
