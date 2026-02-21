@@ -1,6 +1,5 @@
 services:
   moonlight-web:
-    # Официальный образ, который точно есть в реестрах
     image: ghcr.io/moonlight-stream/moonlight-chrome-wasmv2:latest
     container_name: moonlight-web
     restart: always
