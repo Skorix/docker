@@ -1,10 +1,9 @@
 #!/bin/bash
-echo "Скачиваю образ через облачное зеркало Timeweb..."
-# Используем зеркало, которое работает в РФ без сбоев
-docker pull dockerhub.timeweb.cloud/moonlightstream/moonlight-chrome-wasmv2:latest
+echo "Скачиваю альтернативный образ..."
+docker pull huecker.io/giongto35/web-moonlight:latest
 
 echo "Создаю локальный тег..."
-# Переименовываем, чтобы docker-compose его "узнал"
-docker tag dockerhub.timeweb.cloud/moonlightstream/moonlight-chrome-wasmv2:latest ghcr.io/moonlight-stream/moonlight-chrome-wasmv2:latest
+docker tag huecker.io/giongto35/web-moonlight:latest giongto35/web-moonlight:latest
 
 echo "Готово! Запускай docker compose up -d"
+
