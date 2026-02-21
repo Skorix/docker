@@ -1,25 +1,22 @@
 #!/bin/bash
-# 1. Подготовка папки
-echo "Подготовка окружения..."
-docker compose down --remove-orphans
-rm -rf ~/moonlight-web-dist
-mkdir -p ~/moonlight-web-dist
-cd ~/moonlight-web-dist
+echo "Очистка старых файлов..."
+rm -rf ~/moonlight-dist
+mkdir -p ~/moonlight-dist
+cd ~/moonlight-dist
 
-# 2. Скачивание официальной сборки (прямая ссылка на GitHub релиз)
-echo "Загрузка официального релиза..."
-wget https://github.com
+echo "Загрузка официального релиза (v1.0.1)..."
+# Используем curl -L, чтобы скачать сам файл, а не страницу GitHub
+curl -L https://github.com -o moonlight.zip
 
-# 3. Распаковка
 echo "Распаковка..."
-apt-get update && apt-get install unzip -y
-unzip moonlight-chrome-wasmv2.zip
+apt-get update && apt-get install -y unzip
+unzip -o moonlight.zip
+rm moonlight.zip
 
-# 4. Запуск через Python (самый легкий способ)
-echo "Запуск веб-сервера на порту 8080..."
-# Убиваем старые процессы на этом порту, если они есть
+echo "Запуск веб-сервера..."
+# Убиваем старый процесс, если он висит на 8080
 fuser -k 8080/tcp 2>/dev/null
 nohup python3 -m http.server 8080 > /dev/null 2>&1 &
 
-echo "ГОТОВО! Плеер запущен."
-echo "Заходи в браузере: http://$(hostname -I | awk '{print $1}'):8080"
+echo "ГОТОВО! Плеер запущен по адресу: http://$(hostname -I | awk '{print $1}'):8080"
+
