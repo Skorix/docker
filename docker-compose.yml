@@ -1,7 +1,7 @@
 services:
   moonlight-web:
-    # Этот образ качается гораздо стабильнее
-    image: giongto35/web-moonlight:latest
+    # Этот образ лежит на Docker Hub, он публичный и качается без логина
+    image: moonlightstream/moonlight-chrome-wasmv2:latest
     container_name: moonlight-web
     restart: always
     ports:
