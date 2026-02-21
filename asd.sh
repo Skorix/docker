@@ -1,14 +1,23 @@
-# 1. Удаляем "битый" файл
+#!/bin/bash
+echo "Полная очистка..."
+fuser -k 8080/tcp 2>/dev/null
+rm -rf ~/cg/docker/*
+cd ~/cg/docker
+
+echo "Загрузка реального архива (зеркало jsDelivr)..."
+# Это зеркало отдает файл напрямую без редиректов GitHub
+curl -L https://cdn.jsdelivr.net -o moonlight.zip
+
+echo "Распаковка..."
+# Если unzip нет, ставим его
+apt-get update && apt-get install -y unzip
+unzip -o moonlight.zip
 rm moonlight.zip
 
-# 2. Скачиваем настоящий архив через curl с флагом -L (обязательно)
-curl -L https://github.com -o moonlight.zip
+echo "Проверка файлов..."
+ls -lh index.html
 
-# 3. Распаковываем (теперь ошибок быть не должно)
-unzip -o moonlight.zip
-
-# 4. Перезапускаем сервер, чтобы он увидел новые файлы (index.html и др.)
-fuser -k 8080/tcp 2>/dev/null
+echo "Запуск сервера..."
 nohup python3 -m http.server 8080 > /dev/null 2>&1 &
 
-echo "Готово! Обновляй страницу в браузере."
+echo "ГОТОВО! Обновляй страницу: http://147.45.216.75:8080"
