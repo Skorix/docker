@@ -1,6 +1,7 @@
 services:
   moonlight:
-    image: giongto35/web-moonlight:latest
+    # Используем российское зеркало напрямую
+    image: dockerhub.timeweb.cloud/giongto35/web-moonlight:latest
     ports:
       - "8080:80"
     restart: always
