@@ -1,6 +1,7 @@
 services:
   moonlight-web:
-    image: ghcr.io/moonlight-stream/moonlight-chrome-wasmv2:latest
+    # Этот образ качается гораздо стабильнее
+    image: giongto35/web-moonlight:latest
     container_name: moonlight-web
     restart: always
     ports:
