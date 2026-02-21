@@ -1,7 +1,7 @@
 services:
   moonlight-web:
-    # Этот образ доступен на Docker Hub и работает без ошибок доступа
-    image: ipeit/moonlight-chrome-wasmv2:latest
+    # Прописываем зеркало напрямую, чтобы Docker не искал на заблокированном Hub
+    image: huecker.io/ipeit/moonlight-chrome-wasmv2:latest
     container_name: moonlight-web
     restart: always
     ports:
