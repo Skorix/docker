@@ -1,8 +1,6 @@
 services:
-  moonlight-web:
-    # Этот образ лежит на Docker Hub, он публичный и качается без логина
-    image: moonlightstream/moonlight-chrome-wasmv2:latest
-    container_name: moonlight-web
-    restart: always
+  moonlight:
+    image: giongto35/web-moonlight:latest
     ports:
       - "8080:80"
+    restart: always
