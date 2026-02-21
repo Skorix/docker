@@ -1,7 +1,7 @@
 services:
-  # Игровой плеер в браузере
   moonlight-web:
-    image: moonlightstream/moonlight-chrome-wasmv2:latest
+    # Этот образ точно есть в реестре GitHub
+    image: ghcr.io/moonlight-stream/moonlight-chrome-wasmv2:latest
     container_name: moonlight-web
     restart: always
     ports:
