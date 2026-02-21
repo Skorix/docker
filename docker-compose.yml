@@ -1,10 +1,8 @@
-version: '3.8'
-
 services:
-  # Игровой плеер в браузере
   moonlight-web:
-    image: ghcr.io/moonlight-stream/moonlight-chrome-wasmv2:latest
+    # Используем этот проверенный образ:
+    image: moonlighstream/moonlight-chrome-wasmv2:latest
     container_name: moonlight-web
     restart: always
     ports:
-      - "8080:80" # Заходить сюда: http://vps_ip:8080
+      - "8080:80"
