@@ -1,0 +1,7 @@
+sudo pacman -S xdg-desktop-portal-wlr xdg-desktop-portal-gtk --noconfirm
+
+flatpak override --user --socket=wayland --env=QT_QPA_PLATFORM=wayland com.vivaldi.Vivaldi
+
+flatpak run com.vivaldi.Vivaldi --ozone-platform=wayland --disable-gpu
+
+flatpak run com.vivaldi.Vivaldi --no-sandbox --disable-gpu
