@@ -1,7 +1,24 @@
 services:
-  moonlight:
-    # Используем российское зеркало напрямую
-    image: dockerhub.timeweb.cloud/giongto35/web-moonlight:latest
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
     ports:
-      - "8080:80"
+      - 3000:3000
+    volumes:
+      - ./config:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    ports:
+      - 9443:9443
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/var/data
     restart: always
+
+volumes:
+  portainer_data:
