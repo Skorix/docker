@@ -105,3 +105,4 @@ echo "Доступны команды:"
 echo "  micro, btop, btm (bottom), dust, fastfetch (если был), yazi, zellij"
 echo -e "${YELLOW}Если какая-то команда не найдена, перелогиньтесь или выполните:${NC}"
 echo "  source ~/.profile"
+echo time
