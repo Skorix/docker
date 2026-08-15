@@ -5,23 +5,14 @@ PUBLIC_KEY="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN2y8aip3DLo6xHS/bPv0rt7vfqt3Yxx
 APP_DIR="/opt/tg-dl"
 APP_PORT=8888
 
-# 1. Установка Docker (если не установлен)
+# Docker
 if ! command -v docker &>/dev/null; then
-    echo "==> Устанавливаем Docker..."
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    sh get-docker.sh
-    systemctl start docker
-    systemctl enable docker
-else
-    echo "✅ Docker уже установлен: $(docker --version)"
+    curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh
+    systemctl start docker && systemctl enable docker
 fi
 
-# 2. Установка плагина docker compose (если не доступен)
-if docker compose version &>/dev/null; then
-    echo "✅ Плагин docker compose уже установлен"
-else
-    echo "==> Устанавливаем docker-compose-plugin через официальный репозиторий..."
-    # Добавляем официальный репозиторий Docker
+# docker compose plugin
+if ! docker compose version &>/dev/null; then
     apt-get update -qq
     apt-get install -y ca-certificates curl
     install -m 0755 -d /etc/apt/keyrings
@@ -30,14 +21,11 @@ else
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
     apt-get update -qq
     apt-get install -y docker-compose-plugin
-    echo "✅ Плагин установлен"
 fi
 
-# 3. Создаём папку и docker-compose.yml
+# Папка и docker-compose.yml
 mkdir -p "$APP_DIR"
-if [ ! -f "$APP_DIR/docker-compose.yml" ]; then
-    echo "==> Создаём docker-compose.yml в $APP_DIR"
-    cat > "$APP_DIR/docker-compose.yml" <<EOF
+cat > "$APP_DIR/docker-compose.yml" <<EOF
 version: '3'
 services:
   app:
@@ -46,28 +34,14 @@ services:
     restart: always
     ports:
       - "${APP_PORT}:${APP_PORT}"
+    environment:
+      - BOT_TOKEN=\${BOT_TOKEN}
+      - ALLOWED_USER_ID=\${ALLOWED_USER_ID}
 EOF
-else
-    echo "✅ docker-compose.yml уже существует"
-fi
 
-# 4. Добавляем публичный SSH-ключ (если ещё не добавлен)
+# SSH ключ
 mkdir -p ~/.ssh
-if ! grep -q "$PUBLIC_KEY" ~/.ssh/authorized_keys 2>/dev/null; then
-    echo "==> Добавляем публичный ключ в ~/.ssh/authorized_keys"
-    echo "$PUBLIC_KEY" >> ~/.ssh/authorized_keys
-    chmod 600 ~/.ssh/authorized_keys
-else
-    echo "✅ Публичный ключ уже добавлен"
-fi
+grep -q "$PUBLIC_KEY" ~/.ssh/authorized_keys 2>/dev/null || echo "$PUBLIC_KEY" >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
 
-echo "============================================="
-echo "✅ Настройка завершена!"
-echo "   - Docker: $(docker --version)"
-echo "   - docker compose: $(docker compose version 2>/dev/null || echo 'установлен')"
-echo "   - Папка приложения: $APP_DIR"
-echo "   - Порт: $APP_PORT"
-echo "   - Публичный ключ добавлен"
-echo ""
-echo "Теперь запушите изменения в GitLab — деплой автоматический."
-echo "============================================="
+echo "✅ VPS настроен. Теперь запушьте изменения в GitLab."
