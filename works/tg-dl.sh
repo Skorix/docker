@@ -3,7 +3,7 @@ set -e
 
 PUBLIC_KEY="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN2y8aip3DLo6xHS/bPv0rt7vfqt3Yxx7/JK1iooGziq gitlab-deploy"
 APP_DIR="/opt/tg-dl"
-APP_PORT=8888
+APP_PORT=1703
 
 # Docker
 if ! command -v docker &>/dev/null; then
