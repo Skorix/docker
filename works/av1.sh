@@ -71,7 +71,7 @@ chmod +x gen-passwords.sh
 echo "5. Создание необходимых каталогов конфигурации..."
 mkdir -p ~/.jitsi-meet-cfg/{web,transcripts,prosody/config,prosody/prosody-plugins-custom,jicofo,jvb,jigasi,jibri}
 
-echo "5a. Настройка прав доступа для контейнеров (UID 1000)..."
+# FIX: Устанавливаем права для пользователя внутри контейнеров (UID 1000)
 chown -R 1000:1000 ~/.jitsi-meet-cfg
 
 echo "6. Настройка .env для работы по IP (без домена, без Let's Encrypt)..."
