@@ -5,7 +5,6 @@ TS6_DIR="/opt/teamspeak6"
 CONTAINER_NAME="teamspeak6-server"
 AUTO_CONFIRM=0
 
-# Проверяем флаги
 for arg in "$@"; do
   case $arg in
     -y|--yes) AUTO_CONFIRM=1 ;;
@@ -21,17 +20,13 @@ install_docker() {
     log "Docker уже установлен. Пропускаю."
     return 0
   fi
-
   log "Docker не найден. Устанавливаю..."
-
   if [[ -f /etc/debian_version ]]; then
     apt-get update -qq
     apt-get install -y -qq ca-certificates curl gnupg lsb-release >/dev/null
     mkdir -p /etc/apt/keyrings
     curl -fsSL https://download.docker.com/linux/$(. /etc/os-release && echo "$ID")/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    echo \
-      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$(. /etc/os-release && echo "$ID") \
-      $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list >/dev/null
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$(. /etc/os-release && echo "$ID") $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list >/dev/null
     apt-get update -qq
     apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-compose-plugin >/dev/null
   elif [[ -f /etc/redhat-release ]]; then
@@ -42,18 +37,14 @@ install_docker() {
   else
     error "Неподдерживаемая ОС. Установи Docker вручную: https://docs.docker.com/engine/install/"
   fi
-
   log "Docker установлен."
 }
 
 cleanup_old() {
   if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     warn "Найден существующий контейнер ${CONTAINER_NAME}."
-    
     if [[ -d "${TS6_DIR}/ts6-data" ]] && [ "$(ls -A ${TS6_DIR}/ts6-data 2>/dev/null)" ]; then
-      warn "ВНИМАНИЕ: В папке ${TS6_DIR}/ts6-data есть данные (каналы, права, логи)."
-      warn "При переустановке они будут УДАЛЕНЫ."
-      
+      warn "ВНИМАНИЕ: В папке ${TS6_DIR}/ts6-data есть данные. При переустановке они будут УДАЛЕНЫ."
       if [[ ${AUTO_CONFIRM} -eq 0 ]]; then
         read -p "Продолжить и удалить старые данные? [y/N] " -n 1 -r
         echo
@@ -63,11 +54,8 @@ cleanup_old() {
         fi
       fi
     fi
-
     log "Останавливаю и удаляю старый контейнер..."
-    docker compose -f "${TS6_DIR}/docker-compose.yml" down --volumes --remove-orphans 2>/dev/null || \
-      docker rm -f "${CONTAINER_NAME}" 2>/dev/null || true
-    
+    docker compose -f "${TS6_DIR}/docker-compose.yml" down --volumes --remove-orphans 2>/dev/null || docker rm -f "${CONTAINER_NAME}" 2>/dev/null || true
     log "Удаляю старые данные..."
     rm -rf "${TS6_DIR}/ts6-data"
   fi
@@ -75,9 +63,14 @@ cleanup_old() {
 
 deploy_ts6() {
   log "Подготовка директории: ${TS6_DIR}"
-  mkdir -p "${TS6_DIR}"
-  cd "${TS6_DIR}"
+  mkdir -p "${TS6_DIR}/ts6-data"
+  
+  # ИСПРАВЛЕНИЕ: Выдаем права пользователю 9987 (под ним работает TS6)
+  log "Установка прав на папку данных (UID 9987)..."
+  chown -R 9987:9987 "${TS6_DIR}/ts6-data"
+  chmod -R 755 "${TS6_DIR}/ts6-data"
 
+  cd "${TS6_DIR}"
   cat > docker-compose.yml <<EOF
 services:
   teamspeak6:
@@ -85,34 +78,39 @@ services:
     container_name: ${CONTAINER_NAME}
     restart: unless-stopped
     ports:
-      - "9987:9987/udp"   # Голосовой порт
-      - "30033:30033/tcp" # Передача файлов
+      - "9987:9987/udp"
+      - "30033:30033/tcp"
     environment:
       TSSERVER_LICENSE_ACCEPTED: "accept"
     volumes:
       - ./ts6-data:/var/tsserver/
 EOF
-
-  log "Скачиваю образ (если нужно) и запускаю контейнер..."
+  log "Скачиваю образ и запускаю контейнер..."
   docker compose up -d --pull always
 }
 
 get_privilege_key() {
-  log "Ожидаю запуска и появления privilege key..."
+  log "Ожидаю появления privilege key в логах (это может занять до 5 минут)..."
   local key=""
-  local retries=30
+  local retries=150
 
   while [[ ${retries} -gt 0 ]]; do
     sleep 2
-    key=$(docker logs "${CONTAINER_NAME}" 2>&1 | grep -oE 'token=[A-Za-z0-9+/=_-]+' | head -n1 | cut -d= -f2 || true)
+    key=$(docker logs "${CONTAINER_NAME}" 2>&1 | grep -oiE '(token=|apikey=)[A-Za-z0-9+/=_-]+' | head -n1 | sed 's/.*=//' || true)
     if [[ -n "${key}" ]]; then
       break
+    fi
+    # Если в логах появилась ошибка прав — прерываемся и подсказываем
+    if docker logs "${CONTAINER_NAME}" 2>&1 | tail -n 5 | grep -q 'Failed to create log directory'; then
+      error "Сервер не может создать логи. Проверьте права на ${TS6_DIR}/ts6-data (должен быть владелец 9987:9987)."
     fi
     ((retries--))
   done
 
   if [[ -z "${key}" ]]; then
-    error "Не удалось получить privilege key. Проверь логи: docker logs ${CONTAINER_NAME}"
+    warn "Ключ не найден. Последние строки лога:"
+    docker logs "${CONTAINER_NAME}" 2>&1 | tail -n 20
+    error "Не удалось получить privilege key. Проверьте логи: docker logs ${CONTAINER_NAME}"
   fi
 
   log "Готово! Твой ServerAdmin privilege key:"
